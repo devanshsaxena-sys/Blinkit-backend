@@ -46,34 +46,50 @@ const createRazorpayOrder = async (req, res) => {
 };
 const verifyPayment = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
+        console.log("VERIFY BODY:", req.body);
 
-        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-            return res.status(400).json({ message: 'Payment verification data missing' });
-        }
+        const {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            amount
+        } = req.body;
 
         const generatedSignature = crypto
             .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
             .update(`${razorpay_order_id}|${razorpay_payment_id}`)
             .digest('hex');
 
+        console.log("GENERATED:", generatedSignature);
+        console.log("RECEIVED :", razorpay_signature);
+
         if (generatedSignature !== razorpay_signature) {
-            return res.status(400).json({ message: 'Signature mismatch' });
+            return res.status(400).json({
+                message: 'Signature mismatch'
+            });
         }
 
         const payment = await Payment.create({
-            amount: amount || 0,
+            amount,
             paymentMethod: 'razorpay',
             paymentStatus: 'success',
             transactionId: razorpay_payment_id,
         });
 
-        res.status(200).json({ message: 'Payment verified', payment });
+        return res.status(200).json({
+            message: 'Payment verified',
+            payment
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Payment verification failed', error: error.message });
+        console.error("VERIFY PAYMENT ERROR:", error);
+
+        return res.status(500).json({
+            message: 'Payment verification failed',
+            error: error.message
+        });
     }
 };
-
 const createPayment = async (req, res) => {
     try {
         const payment = await Payment.create(req.body);
