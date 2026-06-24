@@ -7,11 +7,20 @@ const orderIncludes = [Customer, Product, Payment];
 
 const createOrder = async (req, res) => {
     try {
+        console.log("ORDER BODY:", req.body);
+
         const order = await Order.create(req.body);
+
         const orderWithDetails = await Order.findByPk(order.id, { include: orderIncludes });
+
         res.status(201).json(orderWithDetails);
     } catch (error) {
-        res.status(500).json({ message: 'Order create nahi hua', error: error.message });
+        console.error("ORDER CREATE ERROR:", error);
+
+        res.status(500).json({
+            message: 'Order create nahi hua',
+            error: error.message
+        });
     }
 };
 
