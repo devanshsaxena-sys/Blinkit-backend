@@ -22,7 +22,7 @@ const Payment = sequelize.define('Payment', {
         allowNull: false,
     },
     paymentMethod: {
-        type: DataTypes.ENUM('cash', 'card', 'upi', 'netbanking'),
+        type: DataTypes.ENUM('cash', 'card', 'upi', 'netbanking','razorpay'),
         allowNull: false,
     },
     paymentStatus: {
